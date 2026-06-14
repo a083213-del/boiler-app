@@ -1,10 +1,10 @@
-const CACHE_NAME = 'boiler-inspection-v4';
+const CACHE_NAME = 'boiler-inspection-v5'; // v5に上げます
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  '/sw.js',
-  '/db.js',
+  './sw.js',  // ← / を ./ に修正
+  './db.js',  // ← / を ./ に修正
   './icon.png'
 ];
 
