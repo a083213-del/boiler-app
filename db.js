@@ -40,3 +40,36 @@ function saveData(data) {
         }
     });
 }
+// 全データを取り出す関数（追加）
+function getAllData() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const db = await getDB();
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const store = tx.objectStore(STORE_NAME);
+            const request = store.getAll();
+            
+            request.onsuccess = e => resolve(e.target.result);
+            request.onerror = e => reject(e.target.error);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+// データをすべて削除する関数（テスト用に便利なので追加）
+function clearData() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const db = await getDB();
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            const request = store.clear();
+            
+            request.onsuccess = () => resolve(true);
+            request.onerror = e => reject(e.target.error);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}

@@ -147,7 +147,7 @@
 
     <header style="position: relative;">
         ボイラー点検
-        <span id="app-version" style="position: absolute; right: 15px; bottom: 5px; font-size: 12px; color: #cbd5e1; font-weight: normal;">Ver 1.1.0</span>
+        <span id="app-version" style="position: absolute; right: 15px; bottom: 5px; font-size: 12px; color: #cbd5e1; font-weight: normal;">Ver 1.2.0</span>
     </header>
 
     <div class="container">
@@ -233,7 +233,19 @@
         </div>
 
         <button class="btn-submit" id="submitBtn">点検データを保存</button>
+        <div style="margin-top: 30px; border-top: 2px solid #cbd5e1; padding-top: 20px;">
+            <h2 style="font-size: 18px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px;">データ管理・出力</h2>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button id="showDataBtn" style="flex: 1; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: bold;">履歴を表示</button>
+                <button id="downloadCsvBtn" style="flex: 1; padding: 12px; background-color: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold;">CSV出力</button>
+            </div>
+            
+            <div id="dataList" style="display: none; max-height: 250px; overflow-y: auto; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; margin-bottom: 10px;">
+            </div>
 
+            <button id="clearDataBtn" style="display: none; width: 100%; padding: 10px; background-color: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold;">全データを削除</button>
+        </div>
     </div>
 <script src="db.js"></script>
 <script>
@@ -323,6 +335,75 @@
             } catch (error) {
                 alert('保存エラーが発生しました。'); // エラー時のみ表示
                 console.error(error);
+            }
+        });
+        // ======= 履歴を表示する処理 =======
+        document.getElementById('showDataBtn').addEventListener('click', async () => {
+            const dataList = document.getElementById('dataList');
+            const clearBtn = document.getElementById('clearDataBtn');
+            dataList.innerHTML = ''; // 一度中身を空にする
+            
+            const records = await getAllData();
+            if (records.length === 0) {
+                dataList.innerHTML = '<p>保存されているデータはありません。</p>';
+            } else {
+                // 新しいデータが上に来るように逆順にする
+                records.reverse().forEach(record => {
+                    // タイムスタンプを日時に変換
+                    const dateStr = new Date(record.timestamp).toLocaleString('ja-JP');
+                    dataList.innerHTML += `
+                        <div style="border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;">
+                            <strong>${dateStr}</strong><br>
+                            機器: ${record.equipment} | 状態: ${record.status}<br>
+                            圧力: ${record.pressure} | 水量: ${record.waterMeter}
+                        </div>
+                    `;
+                });
+                clearBtn.style.display = 'block'; // 削除ボタンを表示
+            }
+            dataList.style.display = 'block'; // エリアを表示
+        });
+
+        // ======= CSVを出力する処理 =======
+        document.getElementById('downloadCsvBtn').addEventListener('click', async () => {
+            const records = await getAllData();
+            if (records.length === 0) {
+                alert('出力するデータがありません。');
+                return;
+            }
+
+            // CSVのヘッダー（1行目）
+            let csvContent = "記録日時,スキャン時刻,機器名,状態,圧力,水量\n";
+            
+            // データをCSV形式に変換
+            records.forEach(record => {
+                const dateStr = new Date(record.timestamp).toLocaleString('ja-JP');
+                // Excelで文字化けやズレを防ぐため、各項目を " " で囲む
+                csvContent += `"${dateStr}","${record.scannedTime}","${record.equipment}","${record.status}","${record.pressure}","${record.waterMeter}"\n`;
+            });
+
+            // Excelの文字化け防止用（BOM）
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csvContent], { type: 'text/csv' });
+            
+            // ダウンロードの実行
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ボイラー点検データ_${new Date().getTime()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // ======= 全データを削除する処理 =======
+        document.getElementById('clearDataBtn').addEventListener('click', async () => {
+            if (confirm('本当にすべてのデータを削除しますか？\n※この操作は取り消せません。')) {
+                await clearData();
+                document.getElementById('dataList').innerHTML = '<p>データを削除しました。</p>';
+                document.getElementById('clearDataBtn').style.display = 'none';
+                alert('データをクリアしました。');
             }
         });
     </script>
