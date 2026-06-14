@@ -283,7 +283,6 @@
         }
         // 保存ボタンが押された時の処理
         document.getElementById('submitBtn').addEventListener('click', async () => {
-            // 入力されたデータを集める（例として「圧力」と「給水メーター」）
             const data = {
                 timestamp: new Date().getTime(),
                 scannedTime: document.getElementById('currentTimeDisplay').innerText,
@@ -293,12 +292,32 @@
                 waterMeter: document.querySelectorAll('input[type="number"]')[1].value
             };
 
-            // db.js の saveData 関数を使ってデータベースに保存
-            await saveData(data);
+            try {
+                // 保存を実行
+                await saveData(data);
 
-            // 完了メッセージを表示してリセット
-            alert('点検データが保存されました。');
-            location.reload(); // 画面を初期状態に戻す
+                // 【フリーズ対策】alert()を廃止し、ボタンの文字を「保存完了！」に変える
+                const submitBtn = document.getElementById('submitBtn');
+                const originalText = submitBtn.innerText;
+                submitBtn.innerText = '保存完了！';
+                submitBtn.style.backgroundColor = '#10b981'; // ボタンを緑色にする
+                submitBtn.disabled = true; // 連続連打を防止
+
+                // 入力欄をクリア
+                document.querySelectorAll('input[type="number"]').forEach(input => { input.value = ''; });
+                document.querySelectorAll('input[name="boiler_status"]')[0].checked = true;
+
+                // 2秒後にボタンを元の状態に戻す
+                setTimeout(() => {
+                    submitBtn.innerText = originalText;
+                    submitBtn.style.backgroundColor = ''; // 元の色に戻す
+                    submitBtn.disabled = false;
+                }, 2000);
+
+            } catch (error) {
+                alert('保存エラーが発生しました。'); // エラー時のみ表示
+                console.error(error);
+            }
         });
     </script>
 </body>
