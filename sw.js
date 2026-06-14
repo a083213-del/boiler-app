@@ -1,8 +1,10 @@
-const CACHE_NAME = 'boiler-inspection-v1';
+const CACHE_NAME = 'boiler-inspection-v2';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
+  '/sw.js',
+  '/db.js',
   './icon.png'
 ];
 
