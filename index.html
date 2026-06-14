@@ -145,7 +145,10 @@
 </head>
 <body>
 
-    <header>ボイラー点検</header>
+    <header style="position: relative;">
+        ボイラー点検
+        <span id="app-version" style="position: absolute; right: 15px; bottom: 5px; font-size: 12px; color: #cbd5e1; font-weight: normal;">Ver 1.1.0</span>
+    </header>
 
     <div class="container">
         
@@ -233,7 +236,10 @@
 
     </div>
 <script src="db.js"></script>
-    <script>
+<script>
+        const CURRENT_VERSION = 'Ver 1.1.0';
+        document.getElementById('app-version').innerText = CURRENT_VERSION;
+
         // QRコードをスキャンした（という想定の）処理
         function simulateQRScan() {
             // 現在の時間を取得
