@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boiler-inspection-v6'; 
+const CACHE_NAME = 'boiler-inspection-v7'; 
 const urlsToCache = [
   './',
   './index.html',
