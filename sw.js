@@ -1,11 +1,12 @@
-const CACHE_NAME = 'boiler-inspection-v7'; 
+const CACHE_NAME = 'boiler-inspection-v8'; // v8に変更
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  './sw.js',  // ← / を ./ に修正
-  './db.js',  // ← / を ./ に修正
-  './icon.png'
+  './sw.js',
+  './db.js',
+  './icon.png',
+  'https://unpkg.com/html5-qrcode' // ←この1行をカンマ付きで追加！
 ];
 
 // インストール時にキャッシュを作成
