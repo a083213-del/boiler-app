@@ -7,7 +7,7 @@
     <title>設備管理アプリ</title>
     
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     
     <style>
         body {
@@ -196,7 +196,9 @@
 
         <input type="text" id="qrInputText" value="ボイラーNo.1" style="width: 100%; padding: 15px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;">
         
-        <button onclick="generateQRCode()" style="width: 100%; padding: 15px; font-size: 16px; background-color: #10b981; color: white; border: none; border-radius: 8px; margin-bottom: 20px; font-weight: bold;">
+       <div style="display: flex; justify-content: center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px;">
+            <canvas id="qrCanvas"></canvas>
+        </div>
             QRコードを生成する
         </button>
 
@@ -266,7 +268,7 @@
     </div>
 
     <script>
-        const CURRENT_VERSION = 'Ver 1.5.0';
+        const CURRENT_VERSION = 'Ver 1.5.1';
         document.getElementById('app-version').innerText = CURRENT_VERSION;
 
         function changeScreen(screenId) {
@@ -284,19 +286,26 @@
             changeScreen('screen-qr-hub');
         }
 
-        // ▼新規追加：QRコードを作成する処理▼
+       // ▼新規追加：QRコードを作成する処理（日本語対応版に修正）▼
         function generateQRCode() {
             const text = document.getElementById('qrInputText').value;
-            const container = document.getElementById('qrCodeContainer');
-            container.innerHTML = ''; // 古いQRを消す
+            const canvas = document.getElementById('qrCanvas');
+            
             if (!text) { alert('設備名を入力してください'); return; }
             
-            new QRCode(container, {
-                text: text,
+            // 日本語対応ライブラリでCanvasにQRを描画
+            QRCode.toCanvas(canvas, text, {
                 width: 200,
-                height: 200,
-                colorDark : "#000000",
-                colorLight : "#ffffff"
+                margin: 2,
+                color: {
+                    dark: "#000000",
+                    light: "#ffffff"
+                }
+            }, function (error) {
+                if (error) {
+                    console.error(error);
+                    alert('QRコードの作成に失敗しました。');
+                }
             });
         }
 

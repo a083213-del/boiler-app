@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boiler-inspection-v10'; // ←数字を1つ上げてください（例: v10）
+const CACHE_NAME = 'boiler-inspection-v11'; // バージョンを上げる
 const urlsToCache = [
   './',
   './index.html',
@@ -7,8 +7,9 @@ const urlsToCache = [
   './db.js',
   './icon.png',
   'https://unpkg.com/html5-qrcode',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js' // ←これを追加
+  'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js' // ←新しいURLに変更
 ];
+
 
 // インストール時にキャッシュを作成
 self.addEventListener('install', event => {
