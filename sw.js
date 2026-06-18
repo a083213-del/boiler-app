@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boiler-inspection-v11'; // バージョンを上げる
+const CACHE_NAME = 'boiler-inspection-v12'; // 数字を上げる
 const urlsToCache = [
   './',
   './index.html',
@@ -7,7 +7,7 @@ const urlsToCache = [
   './db.js',
   './icon.png',
   'https://unpkg.com/html5-qrcode',
-  'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js' // ←新しいURLに変更
+  'https://unpkg.com/qrcode-generator@1.4.4/qrcode.js' // ←ここを新しいURLに変更
 ];
 
 
