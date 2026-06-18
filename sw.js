@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boiler-inspection-v8'; // v8に変更
+const CACHE_NAME = 'boiler-inspection-v10'; // ←数字を1つ上げてください（例: v10）
 const urlsToCache = [
   './',
   './index.html',
@@ -6,7 +6,8 @@ const urlsToCache = [
   './sw.js',
   './db.js',
   './icon.png',
-  'https://unpkg.com/html5-qrcode' // ←この1行をカンマ付きで追加！
+  'https://unpkg.com/html5-qrcode',
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js' // ←これを追加
 ];
 
 // インストール時にキャッシュを作成
