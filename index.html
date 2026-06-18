@@ -145,10 +145,9 @@
     </style>
 </head>
 <body>
-
     <header style="position: relative;">
         設備管理アプリ
-        <span id="app-version" style="position: absolute; right: 15px; bottom: 5px; font-size: 12px; color: #cbd5e1; font-weight: normal;">Ver 1.4.0</span>
+        <span id="app-version" style="position: absolute; right: 15px; bottom: 5px; font-size: 12px; color: #cbd5e1; font-weight: normal;">Ver 1.4.1</span>
     </header>
 
     <div id="screen-main" class="app-screen container" style="display: block;">
@@ -171,7 +170,12 @@
         <div id="qr-reader" style="width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
     </div>
 
-        <h2 style="color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px;">蒸気ボイラーNo1</h2>
+    <div id="screen-qr-hub" class="app-screen container" style="display: none;">
+        <button onclick="changeScreen('screen-main')" style="margin-bottom: 20px; padding: 10px; background-color: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px;">
+            ← メインメニューに戻る
+        </button>
+
+        <h2 id="hubEquipTitle" style="color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px;">設備名</h2>
         <p style="color: #64748b; margin-bottom: 20px;">操作を選択してください。</p>
 
         <button onclick="changeScreen('screen-inspection')" style="width: 100%; padding: 15px; font-size: 16px; background-color: #10b981; color: white; border: none; border-radius: 8px; margin-bottom: 10px;">
@@ -190,23 +194,18 @@
             ← 機器メニューに戻る
         </button>
 
-        <div class="qr-scan-area" id="qrArea">
-            <p style="font-weight:bold; color:#475569; margin-bottom:20px;">設備QRをスキャンして点検を開始</p>
-            <button class="btn-qr" onclick="simulateQRScan()">QRコードスキャナー起動</button>
-        </div>
-
         <div class="scanned-time-box" id="timeBox">
             <div class="time-label">打刻時間（自動記録）</div>
             <div class="time-value" id="currentTimeDisplay">--:--</div>
         </div>
 
-        <h2 id="equipTitle">蒸気ボイラーNo1</h2>
+        <h2 id="equipTitle">設備名</h2>
 
         <div class="status-selector" id="statusSelector">
-            <input type="radio" id="status_run" name="boiler_status" value="RUN" checked onchange="toggleStatus()">
+            <input type="radio" id="status_run" name="boiler_status" value="RUN" checked>
             <label for="status_run" class="status-label">🟢 運転中</label>
             
-            <input type="radio" id="status_stop" name="boiler_status" value="STOP" onchange="toggleStatus()">
+            <input type="radio" id="status_stop" name="boiler_status" value="STOP">
             <label for="status_stop" class="status-label">⚪ 停止中</label>
         </div>
 
@@ -259,24 +258,24 @@
             <button id="downloadCsvBtn" style="flex: 1; padding: 12px; background-color: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold;">CSV出力</button>
         </div>
         
-        <div id="dataList" style="display: none; max-height: 250px; overflow-y: auto; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; margin-bottom: 10px;">
-        </div>
+        <div id="dataList" style="display: none; max-height: 250px; overflow-y: auto; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; margin-bottom: 10px;"></div>
 
         <button id="clearDataBtn" style="display: none; width: 100%; padding: 10px; background-color: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold;">全データを削除</button>
     </div>
-<script src="db.js"></script>
-<script>
-        const CURRENT_VERSION = 'Ver 1.4.0'; // バージョンアップ
+
+    <script>
+        const CURRENT_VERSION = 'Ver 1.4.1';
         document.getElementById('app-version').innerText = CURRENT_VERSION;
 
         // ======= 画面切り替え用の関数 =======
         function changeScreen(screenId) {
-            document.querySelectorAll('.app-screen').forEach(screen => { screen.style.display = 'none'; });
+            document.querySelectorAll('.app-screen').forEach(screen => {
+                screen.style.display = 'none';
+            });
             document.getElementById(screenId).style.display = 'block';
             window.scrollTo(0, 0);
         }
 
-        // ▼▼▼ここから下を追加▼▼▼
         // ======= QRコードリーダーの処理 =======
         let html5QrCode = null;
 
@@ -286,30 +285,28 @@
                 html5QrCode = new Html5Qrcode("qr-reader");
             }
             
-            // iPhoneの背面カメラを起動
             html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 (decodedText) => {
-                    // QRコードの読み取りに成功した瞬間
                     html5QrCode.stop().then(() => {
-                        // 読み取った文字が「ボイラーNo.1」だった場合
-                        if (decodedText === 'ボイラーNo.1') {
-                            // 点検画面のタイトルを書き換えて、ハブ画面へ移動
-                            document.getElementById('equipTitle').innerText = decodedText;
-                            changeScreen('screen-qr-hub');
-                        } else {
-                            // 違うQRコードを読んだ場合
-                            alert('未登録の機器です: ' + decodedText);
-                            changeScreen('screen-main');
-                        }
+                        // 読み取った機器名を各画面のタイトルにセット
+                        document.getElementById('hubEquipTitle').innerText = decodedText;
+                        document.getElementById('equipTitle').innerText = decodedText;
+                        
+                        // 現在時刻を記録
+                        const now = new Date();
+                        document.getElementById('currentTimeDisplay').innerText = 
+                            now.getHours().toString().padStart(2, '0') + ':' + 
+                            now.getMinutes().toString().padStart(2, '0');
+
+                        // ハブ画面へ移動
+                        changeScreen('screen-qr-hub');
                     });
                 },
-                (errorMessage) => {
-                    // 読み取り中のエラーは裏側で常に起きているので無視
-                }
+                (errorMessage) => { /* 無視 */ }
             ).catch((err) => {
-                alert("カメラの起動に失敗しました。iPhoneの「設定」アプリからSafariのカメラアクセスを許可してください。");
+                alert("カメラの起動に失敗しました。");
                 changeScreen('screen-main');
             });
         }
@@ -321,17 +318,8 @@
                 changeScreen('screen-main');
             }
         }
-        // ▲▲▲ここまで追加▲▲▲
-    </script>
-    <script> 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('サービスワーカー登録成功:', reg))
-                    .catch(err => console.log('登録失敗:', err));
-            });
-        }
-        // 保存ボタンが押された時の処理
+
+        // ======= 保存処理 =======
         document.getElementById('submitBtn').addEventListener('click', async () => {
             const data = {
                 timestamp: new Date().getTime(),
@@ -343,93 +331,72 @@
             };
 
             try {
-                // 保存を実行
                 await saveData(data);
-
-                // 【フリーズ対策】alert()を廃止し、ボタンの文字を「保存完了！」に変える
                 const submitBtn = document.getElementById('submitBtn');
                 const originalText = submitBtn.innerText;
                 submitBtn.innerText = '保存完了！';
-                submitBtn.style.backgroundColor = '#10b981'; // ボタンを緑色にする
-                submitBtn.disabled = true; // 連続連打を防止
+                submitBtn.style.backgroundColor = '#10b981';
+                submitBtn.disabled = true;
 
-                // 入力欄をクリア
                 document.querySelectorAll('input[type="number"]').forEach(input => { input.value = ''; });
                 document.querySelectorAll('input[name="boiler_status"]')[0].checked = true;
 
-                // 2秒後にボタンを元の状態に戻す
                 setTimeout(() => {
                     submitBtn.innerText = originalText;
-                    submitBtn.style.backgroundColor = ''; // 元の色に戻す
+                    submitBtn.style.backgroundColor = '';
                     submitBtn.disabled = false;
-                }, 2000);
+                    // 保存が終わったらハブ画面に自動で戻す
+                    changeScreen('screen-qr-hub');
+                }, 1500);
 
             } catch (error) {
-                alert('保存エラーが発生しました。'); // エラー時のみ表示
-                console.error(error);
+                alert('保存エラーが発生しました。');
             }
         });
-        // ======= 履歴を表示する処理 =======
+
+        // ======= 履歴・CSV関連処理 =======
         document.getElementById('showDataBtn').addEventListener('click', async () => {
             const dataList = document.getElementById('dataList');
             const clearBtn = document.getElementById('clearDataBtn');
-            dataList.innerHTML = ''; // 一度中身を空にする
-            
+            dataList.innerHTML = '';
             const records = await getAllData();
             if (records.length === 0) {
                 dataList.innerHTML = '<p>保存されているデータはありません。</p>';
             } else {
-                // 新しいデータが上に来るように逆順にする
                 records.reverse().forEach(record => {
-                    // タイムスタンプを日時に変換
                     const dateStr = new Date(record.timestamp).toLocaleString('ja-JP');
                     dataList.innerHTML += `
                         <div style="border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;">
                             <strong>${dateStr}</strong><br>
                             機器: ${record.equipment} | 状態: ${record.status}<br>
                             圧力: ${record.pressure} | 水量: ${record.waterMeter}
-                        </div>
-                    `;
+                        </div>`;
                 });
-                clearBtn.style.display = 'block'; // 削除ボタンを表示
+                clearBtn.style.display = 'block';
             }
-            dataList.style.display = 'block'; // エリアを表示
+            dataList.style.display = 'block';
         });
 
-        // ======= CSVを出力する処理 =======
         document.getElementById('downloadCsvBtn').addEventListener('click', async () => {
             const records = await getAllData();
-            if (records.length === 0) {
-                alert('出力するデータがありません。');
-                return;
-            }
-
-            // CSVのヘッダー（1行目）
+            if (records.length === 0) { alert('出力するデータがありません。'); return; }
             let csvContent = "記録日時,スキャン時刻,機器名,状態,圧力,水量\n";
-            
-            // データをCSV形式に変換
             records.forEach(record => {
                 const dateStr = new Date(record.timestamp).toLocaleString('ja-JP');
-                // Excelで文字化けやズレを防ぐため、各項目を " " で囲む
                 csvContent += `"${dateStr}","${record.scannedTime}","${record.equipment}","${record.status}","${record.pressure}","${record.waterMeter}"\n`;
             });
-
-            // Excelの文字化け防止用（BOM）
             const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
             const blob = new Blob([bom, csvContent], { type: 'text/csv' });
-            
-            // ダウンロードの実行
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `ボイラー点検データ_${new Date().getTime()}.csv`;
+            a.download = `点検データ_${new Date().getTime()}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         });
 
-        // ======= 全データを削除する処理 =======
         document.getElementById('clearDataBtn').addEventListener('click', async () => {
             if (confirm('本当にすべてのデータを削除しますか？\n※この操作は取り消せません。')) {
                 await clearData();
@@ -438,6 +405,15 @@
                 alert('データをクリアしました。');
             }
         });
+
+        // サービスワーカーの登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW登録成功'))
+                    .catch(err => console.log('SW登録失敗'));
+            });
+        }
     </script>
 </body>
 </html>
