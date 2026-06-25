@@ -194,10 +194,14 @@
         <h2 style="color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px;">QRコード作成</h2>
         <p style="color: #64748b; margin-bottom: 20px;">設備名を入力してQRを作成し、印刷やスクショに利用できます。</p>
 
-        <input type="text" id="qrInputText" value="ボイラーNo.1" style="width: 100%; padding: 15px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;">
-        
-       <div id="qrCodeContainer" style="display: flex; justify-content: center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px;"></div>
-            QRコードを生成する
+        <input type="text" id="qrInputText" value="ボイラーNo.1">
+
+        <button onclick="generateQRCode()"
+            style="width:100%;padding:15px;font-size:16px;
+               background-color:#8b5cf6;color:white;
+               border:none;border-radius:8px;
+               margin-bottom:15px;">
+         QRコードを生成する
         </button>
 
         <div id="qrCodeContainer" style="display: flex; justify-content: center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px;"></div>
@@ -270,47 +274,66 @@
         document.getElementById('app-version').innerText = CURRENT_VERSION;
 
         function changeScreen(screenId) {
-            document.querySelectorAll('.app-screen').forEach(screen => { screen.style.display = 'none'; });
-            document.getElementById(screenId).style.display = 'block';
-            window.scrollTo(0, 0);
+
+         document.querySelectorAll(".app-screen").forEach(screen => {
+         screen.style.display = "none";
+         });
+
+         document.getElementById(screenId).style.display = "block";
+
+         // QRコード作成画面を開いたら自動生成
+          if (screenId === "screen-qr-generator") {
+           generateQRCode();
+         }
+
+         window.scrollTo(0, 0);
         }
 
-        // ▼新規追加：手動で機器を選ぶ処理▼
         function selectEquipment(equipName) {
-            document.getElementById('hubEquipTitle').innerText = equipName;
-            document.getElementById('equipTitle').innerText = equipName;
-            const now = new Date();
-            document.getElementById('currentTimeDisplay').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-            changeScreen('screen-qr-hub');
+        document.getElementById('hubEquipTitle').innerText = equipName;
+        document.getElementById('equipTitle').innerText = equipName;
+
+        const now = new Date();
+         document.getElementById('currentTimeDisplay').innerText =
+        now.getHours().toString().padStart(2, '0') + ':' +
+        now.getMinutes().toString().padStart(2, '0');
+
+        // ← この1行を追加
+         changeScreen('screen-qr-hub');
         }
 
-    // ▼QRコードを作成する処理（日本製ライブラリ版に完全変更）▼
-            function generateQRCode() {
-                const text = document.getElementById('qrInputText').value;
-                const container = document.getElementById('qrCodeContainer');
-                
-                // 一度中身を空にする
-                container.innerHTML = ''; 
-                
-                if (!text) { 
-                    alert('設備名を入力してください'); 
-                    return; 
-                }
-                
-                try {
-                    // 日本語を完璧に処理し、別の名前の命令(qrcode)で実行する
-                    const qr = qrcode(0, 'M'); // 0はサイズ自動、Mはエラー訂正レベル
-                    qr.addData(text);
-                    qr.make();
-                    
-                    // 画像として画面に表示（サイズを5倍に拡大）
-                    container.innerHTML = qr.createImgTag(5, 0);
-                    
-                } catch (error) {
-                    console.error(error);
-                    alert('QRコードの作成に失敗しました。');
-                }
+       // ▼QRコードを作成する処理▼
+        function generateQRCode() {
+
+            const text = document.getElementById("qrInputText").value;
+            const container = document.getElementById("qrCodeContainer");
+
+            // 前回表示したQRコードを削除
+            container.innerHTML = "";
+
+            if (!text) {
+                alert("設備名を入力してください。");
+                return;
             }
+
+            try {
+
+                // QRコード生成
+                const qr = qrcode(0, "M");
+                qr.addData(text, "Byte");
+                qr.make();
+
+                // HTMLとして表示
+                container.innerHTML = qr.createImgTag(5, 0);
+
+            } catch (e) {
+
+                console.error(e);
+                alert("QRコードの生成に失敗しました。");
+
+            }
+
+        }
 
         // ======= QRコードリーダーの処理 =======
         let html5QrCode = null;
